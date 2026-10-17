@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: dim_player
+    columns:
+      - name: player
+        data_tests: [unique, not_null]
+  - name: dim_position
+    columns:
+      - name: position
+        data_tests: [unique, not_null]
+  - name: fct_player_hands
+    description: "One row per player per hand."
+    columns:
+      - name: hand_id
+        data_tests: [not_null]
+      - name: player
+        data_tests:
+          - not_null
+          - relationships: {to: ref('dim_player'), field: player}
+      - name: position
+        data_tests:
+          - accepted_values: {values: ['SB', 'BB', 'UTG', 'MP', 'HJ', 'CO', 'BTN']}
+          - relationships: {to: ref('dim_position'), field: position}
+      - name: vpip
+        data_tests: [not_null]
+  - name: mart_position_stats
+    columns:
+      - name: position
+        data_tests: [unique, not_null]
+  - name: mart_player_profiles
+    columns:
+      - name: player
+        data_tests: [unique, not_null]
+      - name: looseness
+        data_tests:
+          - accepted_values: {values: ['tight', 'standard', 'loose']}
+  - name: mart_data_quality
+    columns:
+      - name: metric
+        data_tests: [unique, not_null]

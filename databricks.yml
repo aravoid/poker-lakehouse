@@ -1,0 +1,39 @@
+# Databricks bundle (a.k.a. Declarative Automation Bundles / Asset Bundles).
+# Deploy:   databricks bundle validate && databricks bundle deploy -t dev
+# Run once: databricks bundle run poker_pipeline -t dev
+bundle:
+  name: poker_lakehouse
+
+artifacts:
+  poker_wheel:
+    type: whl
+    build: python -m build --wheel
+    path: .
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog to write to (check yours; Free Edition uses "workspace")
+    default: workspace
+  schema:
+    description: Schema that holds the pipeline tables and the dbt models
+    default: poker
+  raw_path:
+    description: Glob of the raw .phhs files in a Unity Catalog volume
+    default: /Volumes/workspace/poker/raw/*.phhs
+  warehouse_id:
+    description: SQL warehouse that runs the dbt models (copy its ID from the SQL Warehouses page)
+  alert_email:
+    description: Address emailed when a run fails
+
+targets:
+  dev:
+    mode: development     # prefixes names with your username and PAUSES the schedule
+    default: true
+    workspace:
+      host: https://REPLACE-ME.cloud.databricks.com
+  prod:
+    workspace:
+      host: https://REPLACE-ME.cloud.databricks.com

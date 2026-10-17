@@ -1,0 +1,55 @@
+resources:
+  jobs:
+    poker_pipeline:
+      name: poker-lakehouse-daily
+      max_concurrent_runs: 1
+
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"     # every day at 06:00
+        timezone_id: America/Los_Angeles
+        pause_status: UNPAUSED
+
+      email_notifications:
+        on_failure:
+          - ${var.alert_email}
+
+      environments:
+        - environment_key: default
+          spec:
+            client: "2"
+            dependencies:
+              - ../dist/*.whl
+
+      tasks:
+        # 1. Spark: raw hand files -> bronze -> silver (+ quarantine). The task FAILS, and the
+        #    dbt task below never runs, if more than 5% of hands are quarantined.
+        - task_key: parse_to_silver
+          environment_key: default
+          python_wheel_task:
+            package_name: poker_lakehouse
+            entry_point: poker-pipeline
+            parameters:
+              - "--raw"
+              - "${var.raw_path}"
+              - "--schema"
+              - "${var.catalog}.${var.schema}"
+              - "--format"
+              - "delta"
+              - "--max-quarantine-rate"
+              - "0.05"
+
+        # 2. dbt: silver -> star schema and marts, plus 23 tests. A failing test fails the run.
+        - task_key: dbt_gold
+          depends_on:
+            - task_key: parse_to_silver
+          dbt_task:
+            project_directory: ../dbt
+            commands:
+              - "dbt seed --vars '{lake_schema: ${var.schema}}'"
+              - "dbt build --vars '{lake_schema: ${var.schema}}'"
+            warehouse_id: ${var.warehouse_id}
+            catalog: ${var.catalog}
+            schema: ${var.schema}
+          libraries:
+            - pypi:
+                package: dbt-databricks>=1.8,<2.0

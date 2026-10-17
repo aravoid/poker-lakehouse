@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "poker-lakehouse"
+version = "0.2.0"
+description = "PySpark + dbt lakehouse pipeline for poker hand histories"
+requires-python = ">=3.10"
+# Spark is NOT a hard dependency: Databricks already provides it, and installing a second
+# copy would conflict. Locally, install the "local" extra.
+dependencies = ["tomli; python_version < '3.11'"]   # PHH files are TOML
+
+[project.optional-dependencies]
+local = ["pyspark>=3.5,<3.6"]          # 3.5.x pairs with delta-spark 3.x
+delta = ["delta-spark>=3.2,<3.4"]      # only for running with --format delta locally
+dbt = ["dbt-core>=1.8", "dbt-duckdb>=1.8"]
+test = ["pytest>=8"]
+
+[project.scripts]
+poker-pipeline = "poker_pipeline.pipeline:main"   # entry point the Databricks job calls
+
+[tool.setuptools.packages.find]
+where = ["src"]

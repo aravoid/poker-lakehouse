@@ -1,0 +1,16 @@
+data/
+__pycache__/
+.pytest_cache/
+spark-warehouse/
+metastore_db/
+derby.log
+.venv/
+dist/
+build/
+*.egg-info/
+*.duckdb
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+.databricks/
+dbt/.user.yml

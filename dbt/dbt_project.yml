@@ -1,0 +1,19 @@
+name: poker_lakehouse
+version: "1.0.0"
+config-version: 2
+profile: poker
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+
+vars:
+  lake_schema: poker            # Databricks schema where Spark wrote the silver tables
+  min_hands_for_profile: 100    # players with fewer hands get no style profile
+
+models:
+  poker_lakehouse:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

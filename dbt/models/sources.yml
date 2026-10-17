@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: silver
+    description: Tables written by the Spark pipeline (bronze -> silver).
+    schema: "{{ var('lake_schema') }}"
+    meta:
+      # DuckDB only: read the silver parquet files directly. Ignored on Databricks, where
+      # each table below resolves to <catalog>.<schema>.<identifier>.
+      external_location: "{{ env_var('LAKE_PATH', 'data/lake') }}/silver/{name}/*.parquet"
+    tables:
+      - name: hands
+        identifier: silver_hands
+        columns:
+          - name: hand_id
+            data_tests: [not_null]
+      - name: player_hands
+        identifier: silver_player_hands
+      - name: quarantine
+        identifier: silver_quarantine

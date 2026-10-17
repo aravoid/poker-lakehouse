@@ -1,0 +1,18 @@
+# Two targets, same models:
+#   duckdb      local development and CI: reads the silver parquet files Spark wrote
+#   databricks  production: reads the silver tables Spark wrote to Unity Catalog
+poker:
+  target: duckdb
+  outputs:
+    duckdb:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH', 'data/poker_gold.duckdb') }}"
+      threads: 4
+    databricks:
+      type: databricks
+      catalog: "{{ env_var('DBT_CATALOG', 'main') }}"
+      schema: "{{ env_var('DBT_SCHEMA', 'poker') }}"
+      host: "{{ env_var('DBT_DATABRICKS_HOST', '') }}"
+      http_path: "{{ env_var('DBT_DATABRICKS_HTTP_PATH', '') }}"
+      token: "{{ env_var('DBT_ACCESS_TOKEN', '') }}"   # injected by Databricks in dbt job tasks
+      threads: 4

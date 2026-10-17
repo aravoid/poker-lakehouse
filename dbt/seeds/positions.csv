@@ -1,0 +1,8 @@
+position,seat_order,position_group
+SB,1,blinds
+BB,2,blinds
+UTG,3,early
+MP,4,middle
+HJ,5,middle
+CO,6,late
+BTN,7,late
